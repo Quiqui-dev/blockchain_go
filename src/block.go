@@ -8,6 +8,7 @@ import (
 )
 
 type Block struct {
+	Index         int64
 	Timestamp     int64
 	Data          []byte
 	Hash          []byte
@@ -16,20 +17,21 @@ type Block struct {
 
 func (b *Block) SetHash() {
 	timestamp := []byte(strconv.FormatInt(b.Timestamp, 10))
-
-	blockHeaders := bytes.Join([][]byte{b.PrevBlockHash, b.Data, timestamp}, []byte{})
+	index := []byte(strconv.FormatInt(b.Index, 10))
+	blockHeaders := bytes.Join([][]byte{b.PrevBlockHash, b.Data, timestamp, index}, []byte{})
 
 	hash := sha256.Sum256(blockHeaders)
 
 	b.Hash = hash[:]
 }
 
-func NewBlock(data string, PrevBlockHash []byte) *Block {
+func NewBlock(data string, PrevBlock *Block) *Block {
 	block := &Block{
-		time.Now().Unix(),
-		[]byte(data),
-		PrevBlockHash,
-		[]byte{},
+		Index:         PrevBlock.Index + 1,
+		Timestamp:     time.Now().Unix(),
+		Data:          []byte(data),
+		PrevBlockHash: PrevBlock.Hash,
+		Hash:          []byte{},
 	}
 
 	block.SetHash()
